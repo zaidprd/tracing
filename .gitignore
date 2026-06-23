@@ -1,0 +1,11 @@
+# Godot 4 import cache & editor data (regenerated on first open)
+/.godot/
+
+# Exported builds
+/build/
+*.apk
+*.aab
+
+# OS / editor cruft
+.DS_Store
+Thumbs.db

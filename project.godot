@@ -1,0 +1,37 @@
+; Engine configuration file.
+; Tracing Fun — alphabet & number tracing game for kids (Godot 4)
+
+config_version=5
+
+[application]
+
+config/name="Tracing Fun"
+config/description="Alphabet & number tracing game for kids (ages 3-6)."
+run/main_scene="res://scenes/MainMenu.tscn"
+config/features=PackedStringArray("4.3")
+config/icon="res://icon.svg"
+config/quit_on_go_back=false
+boot_splash/bg_color=Color(1, 0.85, 0.45, 1)
+
+[autoload]
+
+Glyphs="*res://scripts/Glyphs.gd"
+Game="*res://scripts/Game.gd"
+
+[display]
+
+window/size/viewport_width=1080
+window/size/viewport_height=1920
+window/stretch/mode="canvas_items"
+window/stretch/aspect="keep"
+window/handheld/orientation="portrait"
+
+[input_devices]
+
+pointing/emulate_touch_from_mouse=true
+
+[rendering]
+
+renderer/rendering_method="mobile"
+textures/canvas_textures/default_texture_filter=1
+environment/defaults/default_clear_color=Color(0.55, 0.83, 1, 1)
