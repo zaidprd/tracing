@@ -1,9 +1,5 @@
 name: Build Android APK
 
-# Builds an installable (debug-signed) Android APK in the cloud and uploads it
-# as a downloadable artifact — no local Godot / Android SDK needed.
-# Run it from the repo's "Actions" tab (Run workflow), or it runs on push.
-
 on:
   workflow_dispatch:
   push:
@@ -18,7 +14,6 @@ jobs:
   android:
     name: Export Android (debug APK)
     runs-on: ubuntu-latest
-    # Image ships Godot + export templates + Android SDK.
     container:
       image: barichello/godot-ci:4.3
     steps:
@@ -32,39 +27,30 @@ jobs:
              ~/.local/share/godot/export_templates/${GODOT_VERSION}.stable
           mkdir -p ~/.config
           mv /root/.config/godot ~/.config/godot
-          echo "=== godot config dir ==="
-          ls -la ~/.config/godot/ 2>/dev/null || echo "(nothing)"
-          echo "=== editor_settings-4.tres ==="
-          cat ~/.config/godot/editor_settings-4.tres 2>/dev/null | head -40 || echo "(not found)"
 
-      - name: Generate debug keystore and inject into editor settings
+      - name: Generate debug keystore
         run: |
           keytool -keyalg RSA -genkeypair -alias androiddebugkey \
             -keypass android -keystore "$HOME/debug.keystore" -storepass android \
             -dname "CN=Android Debug,O=Android,C=US" -validity 10000 -deststoretype pkcs12
 
-          # Godot 4.3 reads editor_settings-4.3.tres (major.minor), not 4.tres.
-          # The image ships that file with SDK paths; we append keystore settings.
-          SETTINGS="$HOME/.config/godot/editor_settings-4.3.tres"
+      - name: Import project
+        run: godot --headless --path . --import || true
 
-          # Create the file if (somehow) the image didn't ship one
+      - name: Inject keystore into editor settings (AFTER import so Godot doesn't overwrite it)
+        run: |
+          SETTINGS="$HOME/.config/godot/editor_settings-4.3.tres"
           if [ ! -f "$SETTINGS" ]; then
             mkdir -p "$(dirname "$SETTINGS")"
             printf '[gd_resource type="EditorSettings" format=3]\n\n[resource]\n' > "$SETTINGS"
           fi
-
-          # Strip any existing keystore lines, then append fresh ones
           grep -v "^export/android/debug_keystore" "$SETTINGS" > "$SETTINGS.tmp"
           mv "$SETTINGS.tmp" "$SETTINGS"
           echo "export/android/debug_keystore = \"$HOME/debug.keystore\"" >> "$SETTINGS"
           echo 'export/android/debug_keystore_user = "androiddebugkey"'  >> "$SETTINGS"
           echo 'export/android/debug_keystore_pass = "android"'          >> "$SETTINGS"
-
-          echo "=== settings after update ==="
+          echo "=== final settings ==="
           cat "$SETTINGS"
-
-      - name: Import project
-        run: godot --headless --path . --import || true
 
       - name: Export debug-signed APK
         run: |
