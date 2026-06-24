@@ -9,20 +9,20 @@ const SCENE_TRACE := "res://scenes/TracingGame.tscn"
 const SCENE_RESULT := "res://scenes/ResultScreen.tscn"
 
 # ------------------------------------------------------------------- Palette
-const C_SKY := Color("4fc3f7")          # background top
-const C_SKY_LIGHT := Color("b3e5fc")    # background bottom
-const C_SUN := Color("ffd23f")          # warm yellow
-const C_ORANGE := Color("f4791f")       # letter outline / accents
-const C_GREEN := Color("3aa757")        # success
-const C_GREEN_LIGHT := Color("8be36a")
-const C_RED := Color("e8533f")          # wrong feedback
-const C_PINK := Color("ff7eb3")
-const C_PURPLE := Color("9b6dff")
-const C_CREAM := Color("fff3cf")        # notebook page
+const C_SKY := Color("66c7b7")          # background top (mint)
+const C_SKY_LIGHT := Color("c8efe6")    # background bottom (light mint)
+const C_SUN := Color("ffc94d")          # warm golden yellow
+const C_ORANGE := Color("ef6351")       # main accent / tracing trail (coral)
+const C_GREEN := Color("2bb673")        # success
+const C_GREEN_LIGHT := Color("8fe3b0")
+const C_RED := Color("e5484d")          # wrong feedback
+const C_PINK := Color("ff8fab")
+const C_PURPLE := Color("6c63ff")       # indigo
+const C_CREAM := Color("fff3cf")        # notebook page (matches sprite cards)
 const C_BROWN := Color("8a5a2b")        # panel frame
 const C_WHITE := Color("ffffff")
-const C_TEXT := Color("5b3a1a")         # cosy dark-brown text
-const CONFETTI := [C_SUN, C_ORANGE, C_GREEN, C_PINK, C_PURPLE, Color("4fc3f7")]
+const C_TEXT := Color("3a4a55")         # cool slate text
+const CONFETTI := [C_SUN, C_ORANGE, C_GREEN, C_PINK, C_PURPLE, Color("66c7b7")]
 
 # ----------------------------------------------------------------- Game state
 var mode: String = "letters"            # "letters" | "numbers"
