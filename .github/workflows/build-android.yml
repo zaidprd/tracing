@@ -18,7 +18,7 @@ jobs:
   android:
     name: Export Android (debug APK)
     runs-on: ubuntu-latest
-    # Image ships Godot + export templates + Android SDK + a debug keystore.
+    # Image ships Godot + export templates + Android SDK.
     container:
       image: barichello/godot-ci:4.3
     steps:
@@ -33,28 +33,19 @@ jobs:
           mkdir -p ~/.config
           mv /root/.config/godot ~/.config/godot
 
-      - name: Ensure a debug keystore is configured
-        run: |
-          SETTINGS="$HOME/.config/godot/editor_settings-4.3.tres"
-          if [ ! -f "$SETTINGS" ] || ! grep -q "debug_keystore" "$SETTINGS"; then
-            keytool -keyalg RSA -genkeypair -alias androiddebugkey \
-              -keypass android -keystore "$HOME/debug.keystore" -storepass android \
-              -dname "CN=Android Debug,O=Android,C=US" -validity 10000 -deststoretype pkcs12
-            if [ ! -f "$SETTINGS" ]; then
-              printf '[gd_resource type="EditorSettings" format=3]\n[resource]\n' > "$SETTINGS"
-            fi
-            {
-              echo "export/android/debug_keystore = \"$HOME/debug.keystore\""
-              echo 'export/android/debug_keystore_user = "androiddebugkey"'
-              echo 'export/android/debug_keystore_pass = "android"'
-            } >> "$SETTINGS"
-          fi
-
       - name: Import project
         run: godot --headless --path . --import || true
 
-      - name: Export APK
+      - name: Export debug-signed APK
         run: |
+          # Self-signed debug keystore (no secrets needed for a debug build).
+          keytool -keyalg RSA -genkeypair -alias androiddebugkey \
+            -keypass android -keystore "$RUNNER_TEMP/debug.keystore" -storepass android \
+            -dname "CN=Android Debug,O=Android,C=US" -validity 10000 -deststoretype pkcs12
+          # Godot reads the keystore from these env vars (overrides editor settings).
+          export GODOT_ANDROID_KEYSTORE_DEBUG_PATH="$RUNNER_TEMP/debug.keystore"
+          export GODOT_ANDROID_KEYSTORE_DEBUG_USER="androiddebugkey"
+          export GODOT_ANDROID_KEYSTORE_DEBUG_PASSWORD="android"
           mkdir -p build/android
           godot --headless --path . --export-debug "Android" build/android/${EXPORT_NAME}.apk
           ls -la build/android
