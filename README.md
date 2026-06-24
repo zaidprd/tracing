@@ -16,9 +16,9 @@ Designed for **Android**, portrait, **1080 × 1920**.
 | Trace A–Z and 0–9 with touch | `TraceCanvas` follow-the-road tracker driven by screen-touch input |
 | Follow the correct stroke path | Per-glyph ordered stroke data (`scripts/Glyphs.gd`), one stroke at a time, with a start dot + direction arrow |
 | Visual feedback | **Green glow** while on the path, **red shake** when the finger strays (no progress is lost — it's forgiving for little hands) |
-| Audio on completion | Plays `Write.mp3` when a glyph is finished; `Click.mp3` on every button & stroke |
-| Sprites for letter displays | The notebook "hole" sprites are used for the letter cards and the result screen |
-| Fonts for all UI text | `SugarDonut` for titles, `SayComic` for body text |
+| Audio on completion | Plays a success chime when a glyph is finished; a click on every button & stroke |
+| Letter & number displays | Flashcards drawn in code from the same stroke data (`GlyphCard`) — no external image assets |
+| Fonts for all UI text | Comic Neue (Bold for titles, Regular for body) |
 | Reward animation | One-shot **star burst** on success + falling **confetti** on the result screen |
 | Main menu with two modes | **Letters** and **Numbers** |
 | Per-session progress | Counts completed glyphs and shows a ⭐ badge on each finished card |
@@ -57,13 +57,18 @@ tracing/
 │   ├── Game.gd             # autoload: state, palette, fonts, audio, UI + particle helpers
 │   ├── Glyphs.gd           # autoload: AUTO-GENERATED stroke-path data
 │   ├── TraceCanvas.gd      # the core tracing mechanic (drawing + touch + feedback)
+│   ├── GlyphCard.gd        # a letter/number flashcard drawn from stroke data
+│   ├── Icon.gd             # vector UI icons drawn in code (home/prev/next/redo)
 │   ├── MainMenu.gd
 │   ├── LetterSelect.gd
 │   ├── TracingGame.gd
 │   └── ResultScreen.gd
 ├── tools/
-│   └── glyphs.py           # authoring tool that generates scripts/Glyphs.gd
-└── assets/                 # Sprites, Audios, Fonts (from the assets repo)
+│   ├── glyphs.py           # authoring tool that generates scripts/Glyphs.gd
+│   └── make_sounds.py      # synthesizes the click/success sounds
+└── assets/
+    ├── fonts/              # Comic Neue (OFL) + license
+    └── audio/              # click.wav, success.wav (synthesized)
 ```
 
 ### Scene flow
@@ -93,12 +98,18 @@ python3 tools/glyphs.py --emit   # regenerate scripts/Glyphs.gd
 
 ---
 
-## 🎨 Assets
+## 🎨 Assets & licensing
 
-Art, audio and fonts are from
-[SmileSquare562/Alphabet-Tracing-Assets](https://github.com/SmileSquare562/Alphabet-Tracing-Assets)
-(originally Unity assets; the `.meta`/`.asset` files were dropped on import).
+This project ships **original / freely-licensed assets only** — there are no
+borrowed game-art images:
 
-> Note: the source pack is missing a "hole" sprite for the letter **M**, so the
-> game falls back to drawing **M** from the UI font on a matching card. Every
-> other glyph uses its sprite.
+- **Letters, numbers, UI icons and the tracing track** are all drawn in code
+  from the stroke-path data (`GlyphCard`, `Icon`, `TraceCanvas`).
+- **Font:** [Comic Neue](https://github.com/crozynski/comicneue) by Craig Rozynski,
+  under the **SIL Open Font License 1.1** (see `assets/fonts/OFL.txt`).
+- **Sound:** `click.wav` and `success.wav` are **synthesized** by
+  `tools/make_sounds.py`, so they are original and license-free.
+- **Colors / layout / code:** all original.
+
+This makes the game safe to publish or submit as your own work (keep the font's
+OFL license file with it, as the license requires).

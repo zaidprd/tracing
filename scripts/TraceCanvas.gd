@@ -34,11 +34,8 @@ var _shake := 0.0                # remaining shake time
 const SHAKE_TIME := 0.32
 const SHAKE_MAG := 16.0
 
-var _handle_tex: Texture2D
-
 func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_handle_tex = load("res://assets/Sprites/circle_handle.png")
 	resized.connect(_remap)
 	set_process(true)
 
@@ -211,14 +208,13 @@ func _draw() -> void:
 		if nxt > _prog:
 			_draw_arrow(head, stroke[nxt] - head, Game.C_GREEN)
 
-	# 4) The finger handle with green/red glow.
+	# 4) The finger handle with green/red glow, drawn in code.
 	if _show_finger:
 		var glow_col := Game.C_GREEN if _on_path else Game.C_RED
 		draw_circle(_finger, 52.0, Color(glow_col, 0.30))
 		draw_circle(_finger, 40.0, Color(glow_col, 0.30))
-		if _handle_tex:
-			var s := Vector2(78, 78)
-			draw_texture_rect(_handle_tex, Rect2(_finger - s * 0.5, s), false)
+		draw_circle(_finger, 30.0, Color.WHITE)
+		draw_arc(_finger, 30.0, 0.0, TAU, 40, glow_col, 7.0, true)
 
 func _stamp(pts: PackedVector2Array, a: int, b: int, radius: float, color: Color) -> void:
 	for i in range(a, b + 1):

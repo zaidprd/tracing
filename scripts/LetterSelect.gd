@@ -2,9 +2,9 @@ extends Control
 ## Grid of glyph cards to pick from. Shows session progress and a star on each
 ## glyph that has been completed this session.
 
-const COLS := 2
-const CARD_W := 486.0
-const CARD_H := 258.0   # matches the 1299x692 "hole" sprite aspect
+const COLS := 3
+const CARD_W := 318.0
+const CARD_H := 300.0
 
 func _ready() -> void:
 	add_child(Game.make_background(Game.C_SKY, Game.C_SKY_LIGHT))
@@ -12,7 +12,7 @@ func _ready() -> void:
 	_build_grid()
 
 func _build_header() -> void:
-	var back := Game.make_icon_button("res://assets/Sprites/category/back.png", 130)
+	var back := Game.make_icon_button("home", 130, Game.C_ORANGE)
 	back.position = Vector2(28, 56)
 	back.pressed.connect(_go_back)
 	add_child(back)
@@ -24,21 +24,16 @@ func _build_header() -> void:
 	title.offset_bottom = 160
 	add_child(title)
 
-	var prog := Game.make_label("%d / %d" % [Game.completed_count(), Game.total_count()], 52, Game.C_GREEN)
-	prog.add_theme_color_override("font_color", Game.C_GREEN.darkened(0.1))
-	prog.position = Vector2(760, 78)
-	prog.size = Vector2(290, 70)
-	prog.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	var prog := Game.make_label("★  %d / %d" % [Game.completed_count(), Game.total_count()], 46, Game.C_GREEN.darkened(0.1))
+	prog.set_anchors_preset(Control.PRESET_TOP_WIDE)
+	prog.offset_top = 152
+	prog.offset_bottom = 206
 	add_child(prog)
-	var star := Game.make_label("★", 52, Game.C_SUN)
-	star.position = Vector2(700, 78)
-	star.size = Vector2(64, 70)
-	add_child(star)
 
 func _build_grid() -> void:
 	var scroll := ScrollContainer.new()
 	scroll.set_anchors_preset(Control.PRESET_FULL_RECT)
-	scroll.offset_top = 200
+	scroll.offset_top = 230
 	scroll.offset_left = 24
 	scroll.offset_right = -24
 	scroll.offset_bottom = -24
@@ -60,7 +55,7 @@ func _make_card(glyph: String, index: int) -> Control:
 	card.custom_minimum_size = Vector2(CARD_W, CARD_H)
 	card.pivot_offset = Vector2(CARD_W, CARD_H) * 0.5
 
-	var visual := Game.make_glyph_visual(glyph, 150)
+	var visual := Game.make_glyph_visual(glyph)
 	card.add_child(visual)
 
 	if Game.is_completed(glyph):

@@ -1,0 +1,66 @@
+name: Build Android APK
+
+# Builds an installable (debug-signed) Android APK in the cloud and uploads it
+# as a downloadable artifact — no local Godot / Android SDK needed.
+# Run it from the repo's "Actions" tab (Run workflow), or it runs on push.
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - claude/trusting-hawking-ndlwx1
+
+env:
+  GODOT_VERSION: "4.3"
+  EXPORT_NAME: TracingFun
+
+jobs:
+  android:
+    name: Export Android (debug APK)
+    runs-on: ubuntu-latest
+    container:
+      image: barichello/godot-ci:4.3.0
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install export templates
+        run: |
+          mkdir -p ~/.local/share/godot/export_templates/
+          mv /root/.local/share/godot/export_templates/${GODOT_VERSION}.stable \
+             ~/.local/share/godot/export_templates/${GODOT_VERSION}.stable
+
+      - name: Configure Android SDK path + debug keystore
+        run: |
+          mkdir -p ~/.config/godot
+          # carry over any editor settings the image preconfigured
+          [ -d /root/.config/godot ] && cp -r /root/.config/godot/* ~/.config/godot/ 2>/dev/null || true
+          # a debug keystore for signing (no secrets required for a debug build)
+          keytool -keyalg RSA -genkeypair -alias androiddebugkey \
+            -keypass android -keystore "$HOME/debug.keystore" -storepass android \
+            -dname "CN=Android Debug,O=Android,C=US" -validity 10000 -deststoretype pkcs12
+          # editor settings Godot reads during a headless export
+          {
+            echo '[gd_resource type="EditorSettings" format=3]'
+            echo '[resource]'
+            echo "export/android/android_sdk_path = \"${ANDROID_HOME:-/usr/lib/android-sdk}\""
+            echo "export/android/debug_keystore = \"$HOME/debug.keystore\""
+            echo 'export/android/debug_keystore_user = "androiddebugkey"'
+            echo 'export/android/debug_keystore_pass = "android"'
+          } > ~/.config/godot/editor_settings-4.3.tres
+
+      - name: Import project
+        run: godot --headless --path . --import || true
+
+      - name: Export APK
+        run: |
+          mkdir -p build/android
+          godot --headless --path . --export-debug "Android" build/android/${EXPORT_NAME}.apk
+          ls -la build/android
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.EXPORT_NAME }}-android-apk
+          path: build/android/*.apk
+          if-no-files-found: error

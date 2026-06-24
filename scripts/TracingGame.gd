@@ -11,9 +11,9 @@ var _title: Label
 var _instruction: Label
 var _dots_row: HBoxContainer
 var _dots: Array = []
-var _prev_btn: TextureButton
-var _next_btn: TextureButton
-var _redo_btn: TextureButton
+var _prev_btn: Button
+var _next_btn: Button
+var _redo_btn: Button
 var _celebrating := false
 
 func _ready() -> void:
@@ -25,7 +25,7 @@ func _ready() -> void:
 
 # ----------------------------------------------------------------- UI building
 func _build_topbar() -> void:
-	var back := Game.make_icon_button("res://assets/Sprites/category/back.png", 120)
+	var back := Game.make_icon_button("home", 120, Game.C_ORANGE)
 	back.position = Vector2(28, 50)
 	back.pressed.connect(_go_back)
 	add_child(back)
@@ -69,12 +69,12 @@ func _build_panel() -> void:
 	panel.add_child(_canvas)
 
 func _build_controls() -> void:
-	_prev_btn = Game.make_icon_button("res://assets/Sprites/write/previous.png", 150)
+	_prev_btn = Game.make_icon_button("prev", 150, Game.C_SUN)
 	_prev_btn.position = Vector2(60, 1320)
 	_prev_btn.pressed.connect(_on_prev)
 	add_child(_prev_btn)
 
-	_next_btn = Game.make_icon_button("res://assets/Sprites/write/next.png", 150)
+	_next_btn = Game.make_icon_button("next", 150, Game.C_SUN)
 	_next_btn.position = Vector2(870, 1320)
 	_next_btn.pressed.connect(_on_next)
 	add_child(_next_btn)
@@ -84,7 +84,7 @@ func _build_controls() -> void:
 	_instruction.size = Vector2(600, 110)
 	add_child(_instruction)
 
-	_redo_btn = Game.make_icon_button("res://assets/Sprites/retry.png", 150)
+	_redo_btn = Game.make_icon_button("redo", 150, Game.C_GREEN)
 	_redo_btn.position = Vector2(465, 1560)
 	_redo_btn.pressed.connect(_on_redo)
 	add_child(_redo_btn)

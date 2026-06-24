@@ -55,5 +55,5 @@ func _add_floating_cards() -> void:
 		holder.rotation_degrees = -10.0 + 20.0 * (i % 2)
 		holder.modulate.a = 0.5
 		holder.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		holder.add_child(Game.make_glyph_visual(picks[i], 90))
+		holder.add_child(Game.make_glyph_visual(picks[i]))
 		add_child(holder)

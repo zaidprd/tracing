@@ -15,10 +15,10 @@ func _ready() -> void:
 	add_child(title)
 
 	var holder := Control.new()
-	holder.position = Vector2(180, 470)
-	holder.size = Vector2(720, 384)
+	holder.position = Vector2(310, 450)
+	holder.size = Vector2(460, 460)
 	holder.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	holder.add_child(Game.make_glyph_visual(g, 230))
+	holder.add_child(Game.make_glyph_visual(g))
 	add_child(holder)
 
 	var traced := Game.make_label("You traced   %s" % g, 64, Game.C_TEXT)
@@ -34,7 +34,7 @@ func _ready() -> void:
 	_build_buttons()
 
 	# Star burst over everything, centred on the glyph.
-	Game.spawn_burst(self, Vector2(540, 660))
+	Game.spawn_burst(self, Vector2(540, 680))
 
 func _build_buttons() -> void:
 	var row := HBoxContainer.new()

@@ -39,14 +39,14 @@ var _star_tex: Texture2D
 var _dot_tex: Texture2D
 
 func _ready() -> void:
-	font_title = load("res://assets/Fonts/SugarDonut.ttf")
-	font_main = load("res://assets/Fonts/SayComic.ttf")
+	font_title = load("res://assets/fonts/ComicNeue-Bold.ttf")
+	font_main = load("res://assets/fonts/ComicNeue-Regular.ttf")
 	_click = AudioStreamPlayer.new()
-	_click.stream = load("res://assets/Audios/Click.mp3")
+	_click.stream = load("res://assets/audio/click.wav")
 	_click.volume_db = -2.0
 	add_child(_click)
 	_success = AudioStreamPlayer.new()
-	_success.stream = load("res://assets/Audios/Write.mp3")
+	_success.stream = load("res://assets/audio/success.wav")
 	add_child(_success)
 	_star_tex = _build_star_texture(22)
 	_dot_tex = _build_dot_texture(14)
@@ -183,60 +183,43 @@ func _style_button(b: Button, base: Color) -> void:
 	b.add_theme_stylebox_override("pressed", pressed)
 	b.add_theme_stylebox_override("focus", StyleBoxEmpty.new())
 
-## An icon button backed by a sprite from the Sprites folder. Plays click sound.
-func make_icon_button(tex_path: String, size: float) -> TextureButton:
-	var tb := TextureButton.new()
-	var tex: Texture2D = load(tex_path)
-	tb.texture_normal = tex
-	tb.ignore_texture_size = true
-	tb.stretch_mode = TextureButton.STRETCH_KEEP_ASPECT_CENTERED
-	tb.custom_minimum_size = Vector2(size, size)
-	tb.focus_mode = Control.FOCUS_NONE
-	tb.pressed.connect(play_click)
-	return tb
+## A round icon button drawn in code (no external image assets). Plays click sound.
+func make_icon_button(kind: String, diameter: float, bg: Color = C_SUN, icon_color: Color = C_WHITE) -> Button:
+	var b := Button.new()
+	b.custom_minimum_size = Vector2(diameter, diameter)
+	b.focus_mode = Control.FOCUS_NONE
+	var radius := int(diameter * 0.5)
+	var normal := StyleBoxFlat.new()
+	normal.bg_color = bg
+	normal.set_corner_radius_all(radius)
+	normal.border_width_bottom = 8
+	normal.border_color = bg.darkened(0.28)
+	var pressed := normal.duplicate() as StyleBoxFlat
+	pressed.bg_color = bg.darkened(0.1)
+	pressed.border_width_bottom = 3
+	b.add_theme_stylebox_override("normal", normal)
+	b.add_theme_stylebox_override("hover", normal)
+	b.add_theme_stylebox_override("pressed", pressed)
+	b.add_theme_stylebox_override("focus", StyleBoxEmpty.new())
+	var ic := AppIcon.new()
+	ic.kind = kind
+	ic.color = icon_color
+	ic.set_anchors_preset(Control.PRESET_FULL_RECT)
+	b.add_child(ic)
+	b.pressed.connect(play_click)
+	return b
 
-# -------------------------------------------------------- Glyph sprite display
-## Resolve the "hole" sprite path for a glyph (handles odd casing in the assets).
-func hole_path(g: String) -> String:
-	if g >= "0" and g <= "9":
-		return "res://assets/Sprites/numbers/%s/%s_hole.png" % [g, g]
-	var fname := "b_hole.png" if g == "B" else "%s_hole.png" % g
-	return "res://assets/Sprites/alphabet/%s/%s" % [g, fname]
-
-func make_glyph_texture(g: String) -> Texture2D:
-	var p := hole_path(g)
-	if ResourceLoader.exists(p):
-		return load(p)
-	return null
-
-## A non-interactive visual of a glyph: the notebook "hole" sprite when present,
-## otherwise a cream card with the letter drawn from the UI font (e.g. "M").
-func make_glyph_visual(g: String, letter_size: int = 150) -> Control:
-	var tex := make_glyph_texture(g)
-	if tex:
-		var tr := TextureRect.new()
-		tr.texture = tex
-		tr.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-		tr.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-		tr.set_anchors_preset(Control.PRESET_FULL_RECT)
-		tr.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		return tr
-	var p := Panel.new()
-	p.set_anchors_preset(Control.PRESET_FULL_RECT)
-	p.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	var sb := StyleBoxFlat.new()
-	sb.bg_color = C_CREAM
-	sb.set_corner_radius_all(28)
-	sb.set_border_width_all(12)
-	sb.border_color = Color("3d5a73")
-	p.add_theme_stylebox_override("panel", sb)
-	var l := make_label(g, letter_size, C_WHITE)
-	l.add_theme_color_override("font_color", C_WHITE)
-	l.add_theme_color_override("font_outline_color", C_ORANGE)
-	l.add_theme_constant_override("outline_size", 16)
-	l.set_anchors_preset(Control.PRESET_FULL_RECT)
-	p.add_child(l)
-	return p
+# ----------------------------------------------------------------- Glyph display
+## A non-interactive glyph flashcard, drawn from the stroke data (no sprites).
+func make_glyph_visual(g: String) -> Control:
+	var card := GlyphCard.new()
+	card.glyph = g
+	card.trail = C_ORANGE
+	card.bg = C_CREAM
+	card.border = Color("c98a3c")
+	card.set_anchors_preset(Control.PRESET_FULL_RECT)
+	card.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	return card
 
 # ------------------------------------------------------------ Reward particles
 func _build_dot_texture(sz: int) -> Texture2D:
