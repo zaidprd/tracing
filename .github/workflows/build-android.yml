@@ -32,20 +32,40 @@ jobs:
              ~/.local/share/godot/export_templates/${GODOT_VERSION}.stable
           mkdir -p ~/.config
           mv /root/.config/godot ~/.config/godot
+          echo "=== godot config dir ==="
+          ls -la ~/.config/godot/ 2>/dev/null || echo "(nothing)"
+          echo "=== editor_settings-4.tres ==="
+          cat ~/.config/godot/editor_settings-4.tres 2>/dev/null | head -40 || echo "(not found)"
+
+      - name: Generate debug keystore and inject into editor settings
+        run: |
+          keytool -keyalg RSA -genkeypair -alias androiddebugkey \
+            -keypass android -keystore "$HOME/debug.keystore" -storepass android \
+            -dname "CN=Android Debug,O=Android,C=US" -validity 10000 -deststoretype pkcs12
+
+          SETTINGS="$HOME/.config/godot/editor_settings-4.tres"
+
+          # Create the file if the image didn't ship one
+          if [ ! -f "$SETTINGS" ]; then
+            mkdir -p "$(dirname "$SETTINGS")"
+            printf '[gd_resource type="EditorSettings" format=3]\n\n[resource]\n' > "$SETTINGS"
+          fi
+
+          # Strip any existing keystore lines, then append fresh ones
+          grep -v "^export/android/debug_keystore" "$SETTINGS" > "$SETTINGS.tmp"
+          mv "$SETTINGS.tmp" "$SETTINGS"
+          echo "export/android/debug_keystore = \"$HOME/debug.keystore\"" >> "$SETTINGS"
+          echo 'export/android/debug_keystore_user = "androiddebugkey"'  >> "$SETTINGS"
+          echo 'export/android/debug_keystore_pass = "android"'          >> "$SETTINGS"
+
+          echo "=== settings after update ==="
+          cat "$SETTINGS"
 
       - name: Import project
         run: godot --headless --path . --import || true
 
       - name: Export debug-signed APK
         run: |
-          # Self-signed debug keystore (no secrets needed for a debug build).
-          keytool -keyalg RSA -genkeypair -alias androiddebugkey \
-            -keypass android -keystore "$RUNNER_TEMP/debug.keystore" -storepass android \
-            -dname "CN=Android Debug,O=Android,C=US" -validity 10000 -deststoretype pkcs12
-          # Godot reads the keystore from these env vars (overrides editor settings).
-          export GODOT_ANDROID_KEYSTORE_DEBUG_PATH="$RUNNER_TEMP/debug.keystore"
-          export GODOT_ANDROID_KEYSTORE_DEBUG_USER="androiddebugkey"
-          export GODOT_ANDROID_KEYSTORE_DEBUG_PASSWORD="android"
           mkdir -p build/android
           godot --headless --path . --export-debug "Android" build/android/${EXPORT_NAME}.apk
           ls -la build/android
