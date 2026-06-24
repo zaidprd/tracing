@@ -43,9 +43,11 @@ jobs:
             -keypass android -keystore "$HOME/debug.keystore" -storepass android \
             -dname "CN=Android Debug,O=Android,C=US" -validity 10000 -deststoretype pkcs12
 
-          SETTINGS="$HOME/.config/godot/editor_settings-4.tres"
+          # Godot 4.3 reads editor_settings-4.3.tres (major.minor), not 4.tres.
+          # The image ships that file with SDK paths; we append keystore settings.
+          SETTINGS="$HOME/.config/godot/editor_settings-4.3.tres"
 
-          # Create the file if the image didn't ship one
+          # Create the file if (somehow) the image didn't ship one
           if [ ! -f "$SETTINGS" ]; then
             mkdir -p "$(dirname "$SETTINGS")"
             printf '[gd_resource type="EditorSettings" format=3]\n\n[resource]\n' > "$SETTINGS"
